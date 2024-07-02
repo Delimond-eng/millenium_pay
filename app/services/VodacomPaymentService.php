@@ -28,7 +28,7 @@ class VodacomPaymentService
         $headers = [
             'Content-Type' => 'application/json',
             'Authorization' => 'Bearer ' . $token,
-            'Origin' => '127.0.0.1',
+            'Origin' => '*',
             'Host' => 'openapi.m-pesa.com'
         ];
 
@@ -37,10 +37,10 @@ class VodacomPaymentService
             "input_Amount" => "10",
             "input_Country" => "DRC",
             "input_Currency" => "USD",
-            "input_CustomerMSISDN" => "+243813719944",
+            "input_CustomerMSISDN" => "243813719944",
             "input_ServiceProviderCode" => "000000",
             "input_ThirdPartyConversationID" => $sessionID,
-            "input_TransactionReference" => "T1234C",
+            "input_TransactionReference" => "T1234C",   
             "input_PurchasedItemsDesc" => "Formation paiement"
         ];
 
