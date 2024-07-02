@@ -1,215 +1,72 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container-fluid">
-        <!-- Start::page-header -->
-        <div class="d-md-flex d-block align-items-center justify-content-between my-4 page-header-breadcrumb">
-            <div>
-                <p class="fw-semibold fs-18 mb-0">Bienvenue, {{Auth::user()->name}} !</p>
-                <span class="fs-semibold text-muted">Le Tableau de bord !</span>
+    <div class="row authentication mx-0">
+        <div class="col-xxl-7 col-xl-7 col-lg-12">
+            <div class="row justify-content-center align-items-center h-100">
+                <div class="col-xxl-7 col-xl-7 col-lg-7 col-md-7 col-sm-8 col-12">
+                    <form class="p-5" id="payForm" action="{{ route('millenium.mpesa.payment') }}">
+                        <p class="h5 fw-semibold mb-2 d-lg-none d-sm-block">Millenium PAY PORTAL</p>
+                        <p class="mb-3 text-muted op-7 fw-normal d-lg-none d-sm-block">Veuillez procéder à votre paiement !</p>
+
+                        <div id="errors-section">
+                        </div>
+
+                        <div class="row gy-3 mt-3">
+                            <div class="col-xl-12 mt-0">
+                                <label for="amount" class="form-label text-default">Amount</label>
+                                <div class="d-flex">
+                                    <input type="number" id="amount" value="30" name="amount" class="form-control form-control-lg border-primary w-100 me-1"  placeholder="enter amount" readonly>
+                                    <select name="currency" style="width: 100px" class="form-control border-1 border-primary" name="currency" id="currency" disabled>
+                                        <option value="USD" selected>USD</option>
+                                        <option value="CDF">CDF</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-xl-12"> <label for="customer_id" class="form-label text-default">CostumerID</label>
+                                <input type="text" class="form-control form-control-lg"
+                                    id="customer_id" name="customer_id" placeholder="enter customer_id ID">
+                             </div>
+                            <div class="col-xl-12"> <label for="phone" class="form-label text-default">Mpesa Phone Number <sup class="text-danger">*</sup></label>
+                                <div class="d-flex">
+                                    <input class="form-control me-1 text-primary" type="tel" value="+243" style="width: 70px" readonly>
+                                    <input name="phone" type="text" class="form-control form-control-lg"
+                                    id="phone" type="tel" placeholder="enter your Mpesa phone number" maxlength="9" required> </div>
+                                </div>
+
+                            <div class="col-xl-12 d-grid mt-3">
+                                <button id="submitBtn" class="btn btn-lg btn-primary" type="submit"><span id="btn-loader" class="spinner-border spinner-border-sm align-middle d-none" role="status" aria-hidden="true"></span> Make payment</button>
+                             </div>
+                        </div>
+                    </form>
+                </div>
             </div>
-            {{--  <div class="btn-list mt-md-0 mt-2">
-                <select class="form-control d-none d-sm-none d-lg-block d-xxl-block">
-                    <option value="Tout">Tout</option>
-                    <option value="Tout">Direction</option>
-                    <option value="Tout">Province</option>
-                    <option value="Tout">Secrétariat</option>
-                </select>
-            </div>  --}}
         </div>
-        <!-- End::page-header -->
-
-        <!-- Start::row-1 -->
-        {{--  <div class="row">
-            <div class="col-md-12 col-xl-12">
-                <div class="row">
-                    <div class="col-xl-4">
-                        <div class="row">
-                            <div class="col-xl-12">
-                                <div class="card custom-card crm-highlight-card">
-                                    <div class="card-body">
-                                        <div class="d-flex align-items-center justify-content-between">
-                                            <div>
-                                                <div class="fw-semibold fs-18 text-fixed-white mb-2">Statistiques globales des présences</div>
-
-                                                <span class="d-block fw-semibold mt-1"><a class="text-fixed-white" href="javascript:void(0);"><u>Voir détails</u></a></span>
-                                            </div>
-                                            <div>
-                                                <div id="crm-main"></div>
-                                            </div>
-                                        </div>
+        <div class="col-xxl-5 col-xl-5 col-lg-5 d-xl-block d-none px-0">
+            <div class="authentication-cover">
+                <div class="aunthentication-cover-content rounded">
+                    <div
+                        class="swiper keyboard-control swiper-initialized swiper-horizontal swiper-pointer-events swiper-backface-hidden">
+                        <div class="swiper-wrapper"
+                             aria-live="off">
+                             <div
+                                    class="text-fixed-white text-center p-5 d-flex align-items-center justify-content-center">
+                                    <div>
+                                        <div class="mb-5"> <img src="{{ asset('assets/images/tap-to-pay.png') }}"
+                                                class="authentication-image" alt=""> </div>
+                                        <h6 class="fw-semibold text-fixed-white">Millenium PAY PORTAL</h6>
+                                        <p class="fw-normal fs-14 op-7"> Veuillez effectuer le paiement en toute sécurité avec <b class="text-primary">Millenium Pay</b></p>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="col-xxl-12 col-xl-12">
-                            <div class="card custom-card">
-                                <div class="card-header justify-content-between">
-                                    <div class="card-title">
-                                        Statistiques simplifiées
-                                    </div>
-                                    <div class="dropdown">
-                                        <a href="javascript:void(0);" class="p-2 fs-12 text-muted" data-bs-toggle="dropdown" aria-expanded="false">
-                                            Voir tout<i class="ri-arrow-down-s-line align-middle ms-1 d-inline-block"></i>
-                                        </a>
-                                        <ul class="dropdown-menu" role="menu">
-                                            <li><a class="dropdown-item" href="javascript:void(0);">Aujourd'hui</a></li>
-                                            <li><a class="dropdown-item" href="javascript:void(0);">Cette semaine</a></li>
-                                            <li><a class="dropdown-item" href="javascript:void(0);">Dernière semaine</a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <div class="card-body">
-
-                                    <div class="progress-stacked progress-animate progress-xs mb-4">
-                                        <div class="progress-bar bg-success" role="progressbar" style="width: 40%" aria-valuenow="18" aria-valuemin="0" aria-valuemax="100"></div>
-                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 35%" aria-valuenow="26" aria-valuemin="0" aria-valuemax="100"></div>
-                                        <div class="progress-bar bg-danger" role="progressbar" style="width: 25%" aria-valuenow="35" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                    <ul class="list-unstyled mb-0 pt-2 crm-deals-status">
-
-                                        <li class="success">
-                                            <div class="d-flex align-items-center justify-content-between">
-                                                <div>Presences</div>
-                                                <div class="fs-12 text-muted">7478323 agents</div>
-                                            </div>
-                                        </li>
-                                        <li class="warning">
-                                            <div class="d-flex align-items-center justify-content-between">
-                                                <div>Retards</div>
-                                                <div class="fs-12 text-muted">84939 agents</div>
-                                            </div>
-                                        </li>
-                                        <li class="danger">
-                                            <div class="d-flex align-items-center justify-content-between">
-                                                <div>Absences</div>
-                                                <div class="fs-12 text-muted">39948</div>
-                                            </div>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-xl-8">
-                        <div class="row">
-                            <div class="col-xxl-6 col-lg-6 col-md-6">
-                                <div class="card custom-card overflow-hidden">
-                                    <div class="card-body">
-                                        <div class="d-flex align-items-top justify-content-between">
-                                            <div>
-                                                <span class="avatar avatar-md avatar-rounded bg-primary">
-                                                    <i class="ti ti-users fs-16"></i>
-                                                </span>
-                                            </div>
-                                            <div class="flex-fill ms-3">
-                                                <div class="d-flex align-items-center justify-content-between flex-wrap">
-                                                    <div>
-                                                        <p class="text-muted mb-0">Nbre total des agents</p>
-                                                        <h4 class="fw-semibold fs-5 mt-1">4005043</h4>
-                                                    </div>
-                                                    <div id="crm-total-customers"></div>
-                                                </div>
-                                                <div class="d-flex align-items-center justify-content-between mt-1">
-                                                    <div>
-                                                        <a class="text-primary" href="javascript:void(0);">Voir détails<i class="ti ti-arrow-narrow-right ms-2 fw-semibold d-inline-block"></i></a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-xxl-6 col-lg-6 col-md-6">
-                                <div class="card custom-card overflow-hidden">
-                                    <div class="card-body">
-                                        <div class="d-flex align-items-top justify-content-between">
-                                            <div>
-                                                <span class="avatar avatar-md avatar-rounded bg-success">
-                                                    <i class="ti ti-user-check fs-16"></i>
-                                                </span>
-                                            </div>
-                                            <div class="flex-fill ms-3">
-                                                <div class="d-flex align-items-center justify-content-between flex-wrap">
-                                                    <div>
-                                                        <p class="text-muted mb-0">Les agents présents</p>
-                                                        <h4 class="fw-semibold fs-5 mt-1">239403</h4>
-                                                    </div>
-                                                    <div id="crm-total-revenue"></div>
-                                                </div>
-                                                <div class="d-flex align-items-center justify-content-between mt-1">
-                                                    <div>
-                                                        <a class="text-secondary" href="javascript:void(0);">Voir détails<i class="ti ti-arrow-narrow-right ms-2 fw-semibold d-inline-block"></i></a>
-                                                    </div>
-
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-xxl-6 col-lg-6 col-md-6">
-                                <div class="card custom-card overflow-hidden">
-                                    <div class="card-body">
-                                        <div class="d-flex align-items-top justify-content-between">
-                                            <div>
-                                                <span class="avatar avatar-md avatar-rounded bg-warning">
-                                                    <i class="ri-timer-line fs-16"></i>
-                                                </span>
-                                            </div>
-                                            <div class="flex-fill ms-3">
-                                                <div class="d-flex align-items-center justify-content-between flex-wrap">
-                                                    <div>
-                                                        <p class="text-muted mb-0">Les retards</p>
-                                                        <h4 class="fw-semibold fs-5 mt-1">38830</h4>
-                                                    </div>
-                                                    <div id="crm-conversion-ratio"></div>
-                                                </div>
-                                                <div class="d-flex align-items-center justify-content-between mt-1">
-                                                    <div>
-                                                        <a class="text-success" href="javascript:void(0);">Voir détails<i class="ti ti-arrow-narrow-right ms-2 fw-semibold d-inline-block"></i></a>
-                                                    </div>
-
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-xxl-6 col-lg-6 col-md-6">
-                                <div class="card custom-card overflow-hidden">
-                                    <div class="card-body">
-                                        <div class="d-flex align-items-top justify-content-between">
-                                            <div>
-                                                <span class="avatar avatar-md avatar-rounded bg-danger">
-                                                    <i class="bx bx-timer fs-16"></i>
-                                                </span>
-                                            </div>
-                                            <div class="flex-fill ms-3">
-                                                <div class="d-flex align-items-center justify-content-between flex-wrap">
-                                                    <div>
-                                                        <p class="text-muted mb-0">Absences</p>
-                                                        <h4 class="fw-semibold mt-1">44758</h4>
-                                                    </div>
-                                                    <div id="crm-total-deals"></div>
-                                                </div>
-                                                <div class="d-flex align-items-center justify-content-between mt-1">
-                                                    <div>
-                                                        <a class="text-warning" href="javascript:void(0);">Voir détails<i class="ti ti-arrow-narrow-right ms-2 fw-semibold d-inline-block"></i></a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
                         </div>
                     </div>
                 </div>
             </div>
-        </div>  --}}
-        <!-- End::row-1 -->
+        </div>
     </div>
+@endsection
+
+@section("scripts")
+    <script src="{{ asset('assets/js/app/pay_manage.js') }}"></script>
 @endsection
 

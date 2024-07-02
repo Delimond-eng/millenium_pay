@@ -12,7 +12,7 @@ use phpseclib3\Crypt\PublicKeyLoader;
 class VodacomPaymentService
 {
 
-    public function  createPayment(){
+    public function  createTestPayment(){
 
         $sessionID = $this->createSession();
         $token = $this->create_bearer_token2($sessionID);
@@ -40,7 +40,7 @@ class VodacomPaymentService
             "input_CustomerMSISDN" => "243813719944",
             "input_ServiceProviderCode" => "000000",
             "input_ThirdPartyConversationID" => $sessionID,
-            "input_TransactionReference" => "T1234C",   
+            "input_TransactionReference" => "T1234C",
             "input_PurchasedItemsDesc" => "Formation paiement"
         ];
 
@@ -55,7 +55,6 @@ class VodacomPaymentService
             $data = json_decode($response->getBody(), true);
             // Retourner la réponse complète
             return $data;
-
         } catch (\GuzzleHttp\Exception\ClientException $e) {
             // Gérer les exceptions de requête
             if ($e->hasResponse()) {
@@ -63,6 +62,69 @@ class VodacomPaymentService
             } else {
                 return ['error' => $e->getMessage()];
             }
+        } catch (\GuzzleHttp\Exception\ConnectException $e) {
+            return json_decode($e->getMessage(), true);
+        }
+    }
+
+     /**
+      * Payment lancement
+      * @param mixed $datas
+      * @return mixed
+      */
+     public function  createPayment($datas){
+
+        $sessionID = $this->createSession();
+        $token = $this->create_bearer_token2($sessionID);
+
+        if (!$token || !$sessionID) {
+            return ['error' => 'Failed to create token or session ID'];
+        }
+
+        $client = new Client([
+            'base_uri' => 'https://openapi.m-pesa.com:443',
+        ]);
+        // Définir les en-têtes
+        $headers = [
+            'Content-Type' => 'application/json',
+            'Authorization' => 'Bearer ' . $token,
+            'Origin' => '*',
+            'Host' => 'openapi.m-pesa.com'
+        ];
+
+        // Définir les données de la requête
+        $body = [
+            "customer_id" => $datas["customer_id"],
+            "input_Amount" => $datas["amount"],
+            "input_Country" => "DRC",
+            "input_Currency" => $datas["currency"],
+            "input_CustomerMSISDN" => $datas["phone"],
+            "input_ServiceProviderCode" => "000000",
+            "input_ThirdPartyConversationID" => $sessionID,
+            "input_TransactionReference" => "T1234C",
+            "input_PurchasedItemsDesc" => "Formation paiements"
+        ];
+
+        try {
+            // Faire la requête
+            $response = $client->post('/sandbox/ipg/v2/vodacomDRC/c2bPayment/singleStage/', [
+                'headers' => $headers,
+                'json' => $body
+            ]);
+
+            // Décoder la réponse JSON
+            $data = json_decode($response->getBody(), true);
+            // Retourner la réponse complète
+            return $data;
+        } catch (\GuzzleHttp\Exception\ClientException $e) {
+            // Gérer les exceptions de requête
+            if ($e->hasResponse()) {
+                return json_decode($e->getResponse()->getBody()->getContents(), true);
+            } else {
+                return ['error' => $e->getMessage()];
+            }
+        } catch (\GuzzleHttp\Exception\ConnectException $e) {
+            return json_decode($e->getMessage(), true);
         }
     }
 
@@ -73,7 +135,7 @@ class VodacomPaymentService
     private function createSession(){
            $token = $this->create_bearer_token();
         $client = new Client([
-            'base_uri' => 'https://openapi.m-pesa.com',
+            'base_uri' => 'https://openapi.m-pesa.com:443',
             'headers' => [
                 'Origin' => '*',
                 'Host' => 'openapi.m-pesa.com',
