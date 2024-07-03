@@ -1,5 +1,51 @@
 document.addEventListener("DOMContentLoaded", function () {
-    submitData();
+    const form = {
+        id: "payForm",
+        submitButton: "submitBtn",
+        submitButtonLoader: "btn-loader",
+    };
+    submitFormWithCallbacks(
+        form,
+        function successCallback(data) {
+            var successAlert = `
+            <div class="alert alert-success overflow-hidden p-0" role="alert">
+                <div class="p-3 bg-success text-fixed-white d-flex justify-content-between">
+                    <h6 class="alert-heading mb-0 text-fixed-white">Opération effectuée.</h6>
+                    <button type="button" class="btn-close p-0 text-fixed-white" data-bs-dismiss="alert" aria-label="Close">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+                <hr class="my-0">
+                <div class="p-3">
+                    <p class="mb-0">Opération effectuée avec succès! <a href="javascript:void(0);" class="fw-semibold text-decoration-underline">Visitez mosala.site pour plus d'infos !</a></p>
+                </div>
+            </div>
+        `;
+            document.getElementById("errors-section").innerHTML = successAlert;
+        },
+        function failCallback(error) {
+            var errorAlert = `
+            <div class="alert alert-danger overflow-hidden p-0" role="alert">
+                <div class="p-3 bg-danger text-fixed-white d-flex justify-content-between">
+                    <h6 class="alert-heading mb-0 text-fixed-white">Echec de traitement de la requête.</h6>
+                    <button type="button" class="btn-close p-0 text-fixed-white" data-bs-dismiss="alert" aria-label="Close">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+                <hr class="my-0">
+                <div class="p-3">
+                    <p class="mb-0">${
+                        error instanceof Error
+                            ? JSON.parse(error.message).toString()
+                            : error.toString()
+                    }</p>
+                </div>
+            </div>
+        `;
+            document.getElementById("errors-section").innerHTML = errorAlert;
+        }
+    );
+    //submitData();
 });
 
 function submitData() {
@@ -98,6 +144,63 @@ function submitData() {
                     document.getElementById("errors-section").innerHTML =
                         errorAlert;
                     // Réactiver le bouton et cacher le loader en cas d'erreur
+                });
+        });
+}
+
+function submitFormWithCallbacks(form, successCallback, failCallback) {
+    document
+        .getElementById(form.id)
+        .addEventListener("submit", function (event) {
+            event.preventDefault(); // Empêcher le formulaire de se soumettre normalement
+            var formData = new FormData(this);
+
+            // Récupérer le bouton et le loader
+            var submitBtn = document.getElementById(form.submitButton);
+            var loader = document.getElementById(form.submitButtonLoader);
+
+            // Désactiver le bouton et afficher le loader
+            submitBtn.disabled = true;
+            loader.classList.remove("d-none"); // Optionnel : changer le texte du bouton
+
+            // Récupérer le jeton CSRF depuis la balise meta
+            var csrfToken = document
+                .querySelector('meta[name="csrf-token"]')
+                .getAttribute("content");
+
+            // Utiliser fetch pour envoyer les données du formulaire
+            fetch(this.getAttribute("action"), {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-CSRF-TOKEN": csrfToken, // Ajouter le jeton CSRF dans les en-têtes
+                },
+            })
+                .then((response) => {
+                    if (!response.ok) {
+                        return response.json().then((errorData) => {
+                            throw new Error(JSON.stringify(errorData));
+                        });
+                    }
+                    return response.json(); // Convertir la réponse en JSON
+                })
+                .then((data) => {
+                    // Réactiver le bouton et cacher le loader après la réponse
+                    submitBtn.disabled = false;
+                    loader.classList.add("d-none");
+
+                    // Vérifier si des erreurs sont présentes dans la réponse
+                    if (data.errors !== undefined) {
+                        failCallback(data.errors);
+                    } else {
+                        successCallback(data);
+                    }
+                })
+                .catch((error) => {
+                    console.error(error);
+                    submitBtn.disabled = false;
+                    loader.classList.add("d-none");
+                    failCallback(error);
                 });
         });
 }
